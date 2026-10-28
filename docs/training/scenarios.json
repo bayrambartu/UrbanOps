@@ -1,0 +1,51 @@
+{
+ "version":"training-v1",
+ "people":[
+  {"email":"ayse.demir@urbanops.local","name":"Ayşe Demir · Eğitim Yöneticisi","role":"admin"},
+  {"email":"murat.aydin@urbanops.local","name":"Murat Aydın · Eğitim Yöneticisi","role":"admin"},
+  {"email":"selin.kaya@urbanops.local","name":"Selin Kaya · Eğitim Yöneticisi","role":"admin"},
+  {"email":"deniz.arslan@urbanops.local","name":"Deniz Arslan · Eğitim Operatörü","role":"operator"},
+  {"email":"ece.yilmaz@urbanops.local","name":"Ece Yılmaz · Eğitim Operatörü","role":"operator"},
+  {"email":"can.koc@urbanops.local","name":"Can Koç · Eğitim Operatörü","role":"operator"},
+  {"email":"emre.sahin@urbanops.local","name":"Emre Şahin · Kıdemli Teknisyen (Demo)","role":"technician"},
+  {"email":"zeynep.aksoy@urbanops.local","name":"Zeynep Aksoy · Kıdemli Teknisyen (Demo)","role":"technician"},
+  {"email":"ali.yildiz@urbanops.local","name":"Ali Yıldız · Yeni Teknisyen (Demo)","role":"technician"}
+ ],
+ "cases":[
+  {
+   "device":{"id":"LAB-TRF-201","name":"Eğitim · Kadıköy Haberleşme Kontrol Ünitesi","kind":"Sanal trafik haberleşmesi","location":"Kadıköy"},
+   "code":"CONNECTION_TIMEOUT","severity":"high","manager":"ayse.demir@urbanops.local","operator":"deniz.arslan@urbanops.local","expert":"emre.sahin@urbanops.local",
+   "description":"EĞİTİM SİMÜLASYONU: TCP oturumunda timeout ve aralıklı link flap; heartbeat yanıtları kesiliyor.",
+   "assignment":"EĞİTİM: Katman-1 bağlantı kararlılığı ile TCP retransmission/RTO bulgularını ayırın. Kök nedeni ölçümle doğrulayın; kontrolsüz reset uygulamayın.",
+   "resolution":"EĞİTİM SİMÜLASYONU — Gözlem: 100 test isteğinde %12 paket kaybı ve uplink üzerinde 8 link flap görüldü. Hipotez: kararsız fiziksel bağlantı TCP yeniden iletimlerini artırıyor. Kontrol: iki uçtaki bağlantı durumu ve interface sayaçları karşılaştırıldı. Simüle kök neden: arızalı RJ45 patch kablo. Onaylı eğitim müdahalesi: kablo değişimi simüle edildi. Doğrulama: 100 istekte kayıp %0, 15 dakikalık eğitim gözleminde yeni flap yok. Yeni personel önce kendi ölçümünü yapmalı; aynı hata kodu her zaman kablo arızası değildir.",
+   "approval":"EĞİTİM KONTROLÜ: Ön/son paket kaybı, link flap ve heartbeat kayıtları karşılaştırıldı. RCA ile doğrulama kanıtı tutarlı; demo çözümü onaylandı.",
+   "new_description":"EĞİTİM TEKRARI: Aynı sanal cihazda CONNECTION_TIMEOUT yeniden oluştu. Önceki çözümün bu olay için geçerli olup olmadığını yeni ölçümlerle değerlendirin.",
+   "new_assignment":"YENİ PERSONEL EĞİTİMİ: Önce onaylı geçmiş çözümü ve TCP/CRC kaynak özetlerini okuyun. Gözlem → hipotez → kontrol → doğrulama planı hazırlayın. Geçmiş kablo değişimini otomatik çözüm kabul etmeyin."
+  },
+  {
+   "device":{"id":"LAB-NET-202","name":"Eğitim · Üsküdar Erişim Anahtarı","kind":"Sanal Ethernet switch","location":"Üsküdar"},
+   "code":"LINK_CRC_ERRORS","severity":"medium","manager":"murat.aydin@urbanops.local","operator":"ece.yilmaz@urbanops.local","expert":"zeynep.aksoy@urbanops.local",
+   "description":"EĞİTİM SİMÜLASYONU: Ethernet interface üzerinde artan CRC/input error sayaçları; bağlantı zaman zaman kararsız.",
+   "assignment":"EĞİTİM: CRC delta değerini zaman aralığıyla kaydedin. Fiziksel ortam ve speed/duplex uyumunu ayrı hipotezler olarak inceleyin.",
+   "resolution":"EĞİTİM SİMÜLASYONU — Gözlem: interface CRC sayacı beş dakikada 240 arttı; iki uçtaki hız/duplex değerleri uyumluydu. Kontrol: known-good patch kabloyla karşılaştırma yapıldı. Simüle kök neden: hasarlı patch bağlantısı; duplex mismatch doğrulanmadı. Eğitim müdahalesi: patch kablo değişimi simüle edildi. Doğrulama: sonraki 10 dakikada CRC delta 0 ve link kararlı. Sayaç toplamını tek başına yorumlamayın; gözlem aralığı ve artış hızını kaydedin.",
+   "approval":"EĞİTİM KONTROLÜ: CRC delta öncesi/sonrası ve iki uç speed/duplex bilgisi incelendi. Fiziksel katman RCA kaydı yeterli; çözüm onaylandı.",
+   "new_description":"EĞİTİM TEKRARI: LAB-NET-202 üzerinde yeni CRC artışı bildirildi. Önceki RCA örneği var; aynı kök neden varsayılmamalı.",
+   "new_assignment":"YENİ PERSONEL EĞİTİMİ: Cisco kaynak özetini ve onaylı CRC çözümünü karşılaştırın. Sayaç delta, gözlem süresi ve speed/duplex kontrolünü içeren müdahale planı hazırlayın."
+  },
+  {
+   "device":{"id":"LAB-IOT-203","name":"Eğitim · Beşiktaş Sensör Ağ Geçidi","kind":"Sanal IoT gateway","location":"Beşiktaş"},
+   "code":"DHCP_ADDRESS_FAILURE","severity":"high","manager":"selin.kaya@urbanops.local","operator":"can.koc@urbanops.local","expert":"emre.sahin@urbanops.local",
+   "description":"EĞİTİM SİMÜLASYONU: IoT gateway DHCP adresi alamıyor; DISCOVER görülüyor ancak başarılı lease oluşmuyor.",
+   "assignment":"EĞİTİM: DISCOVER/OFFER/REQUEST/ACK akışının kesildiği noktayı, adres havuzunu ve relay/alt ağ ilişkisini inceleyin. Rastgele statik IP atamayın.",
+   "resolution":"EĞİTİM SİMÜLASYONU — Gözlem: istemcide DISCOVER var, OFFER yok; sunucuya relay edilen istek farklı alt ağ havuzuyla eşleşiyordu. Kontrol: relay bilgisi ile onaylı alt ağ planı karşılaştırıldı; ilgili havuzda boş adres bulundu. Simüle kök neden: yanlış relay/alt ağ eşleşmesi, havuz tükenmesi değil. Eğitim müdahalesi: onaylı plana uygun relay eşlemesi simüle edildi. Doğrulama: DISCOVER→OFFER→REQUEST→ACK tamamlandı, beklenen alt ağdan lease alındı. Yeni olayda önce mesaj akışını ve havuz durumunu tekrar kontrol edin.",
+   "approval":"EĞİTİM KONTROLÜ: DHCP mesaj sırası, relay/alt ağ eşleşmesi ve lease sonucu incelendi. RCA ve son kontrol kaydı tutarlı; çözüm onaylandı.",
+   "new_description":"EĞİTİM TEKRARI: Aynı sanal gateway yeniden DHCP_ADDRESS_FAILURE bildiriyor. Bu kez havuz durumu veya relay sorunu henüz doğrulanmadı.",
+   "new_assignment":"YENİ PERSONEL EĞİTİMİ: RFC 2131 kaynak özetini ve önceki onaylı çözümü okuyun. DORA akışındaki eksik adımı bulun; havuz tükenmesi ile relay/alt ağ uyuşmazlığını ayrı hipotezlerle değerlendirin."
+  }
+ ],
+ "documents":[
+  {"title":"Eğitim kaynağı · Cisco Ethernet CRC / fiziksel katman özeti","file":"sources/ethernet-crc.md","url":"https://www.cisco.com/c/en/us/support/docs/switches/catalyst-6500-series-switches/12027-53.html"},
+  {"title":"Eğitim kaynağı · IETF RFC 6298 TCP RTO özeti","file":"sources/tcp-timeout.md","url":"https://www.rfc-editor.org/rfc/rfc6298.html"},
+  {"title":"Eğitim kaynağı · IETF RFC 2131 DHCP adres edinme özeti","file":"sources/dhcp.md","url":"https://www.rfc-editor.org/rfc/rfc2131.html"}
+ ]
+}

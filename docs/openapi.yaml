@@ -1,0 +1,980 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "UrbanOps AI",
+    "version": "0.4.0",
+    "description": "Bağımsız teknik prototip. Alan uzunlukları backend tarafında aksi belirtilmedikçe UTF-8 bayt sayısıyla sınırlandırılır. Listeler en fazla 500 kayıt döndürür."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Process canlılığı",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "summary": "Veritabanı ve broker hazırlığı",
+        "responses": {
+          "200": {
+            "description": "Hazır"
+          },
+          "503": {
+            "description": "Hazır değil"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Oturum aç",
+        "responses": {
+          "200": {
+            "description": "JWT ve rol",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Hatalı kimlik bilgisi"
+          },
+          "429": {
+            "description": "Giriş sınırı"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Mevcut kullanıcının kimliği ve rolü",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/events": {
+      "post": {
+        "summary": "Arıza olayını kuyruğa al; onay sonrası 202",
+        "responses": {
+          "202": {
+            "description": "Kuyruk tarafından kabul edildi; henüz işlenmiş olmayabilir"
+          },
+          "401": {
+            "description": "Geçersiz cihaz anahtarı"
+          },
+          "422": {
+            "description": "Geçersiz olay veya kayıtlı olmayan cihaz/konum"
+          },
+          "503": {
+            "description": "Kuyruk onayı alınamadı; aynı event_id ile tekrar deneyin"
+          }
+        },
+        "security": [
+          {
+            "Ingest": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Event"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/devices": {
+      "get": {
+        "summary": "En fazla 500 cihaz",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Cihaz oluştur (admin/operator)",
+        "responses": {
+          "201": {
+            "description": "Oluşturuldu"
+          },
+          "409": {
+            "description": "Kimlik kullanımda"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Device"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/faults": {
+      "get": {
+        "summary": "En fazla 500 arıza; teknisyen yalnızca kendisine atanmış işlerin arızalarını görür",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "resolved"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/work-orders": {
+      "get": {
+        "summary": "En fazla 500 iş; teknisyen yalnızca kendi işlerini görür, önem ve oluşturulma zamanı sıralı",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/work-orders/{id}": {
+      "patch": {
+        "summary": "Yetkili aktörle iş durumunu değiştir, yeniden ata, devir iste veya çözümü geri gönder",
+        "responses": {
+          "200": {
+            "description": "Güncellendi"
+          },
+          "403": {
+            "description": "Yetkisiz"
+          },
+          "404": {
+            "description": "Bulunamadı"
+          },
+          "409": {
+            "description": "Geçersiz geçiş"
+          },
+          "422": {
+            "description": "Atama veya çözüm notu geçersiz"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transition"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/work-orders/{id}/history": {
+      "get": {
+        "summary": "İşlem geçmişi",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/users": {
+      "get": {
+        "summary": "Yönetim için ekip listesi; teknisyen için yalnızca kendi kullanıcı kaydı",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Kullanıcı oluştur (admin)",
+        "responses": {
+          "201": {
+            "description": "Oluşturuldu"
+          },
+          "409": {
+            "description": "E-posta kullanımda"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports": {
+      "get": {
+        "summary": "Operasyonel raporlar (admin/operator)",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/documents": {
+      "get": {
+        "summary": "İndeksli belgeler",
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Metin belgesini kalıcı kaydet ve indekslemeyi dene (admin/operator)",
+        "responses": {
+          "201": {
+            "description": "Metin ve vektör indeksi hazır"
+          },
+          "202": {
+            "description": "Metin kaydedildi; vektör indeksi hazır değil. Otomatik iş kuyruğu yok; yeniden indeksleme gerekir."
+          },
+          "500": {
+            "description": "Kalıcı kayıt başarısız"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Document"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/faults/{id}/suggestions": {
+      "post": {
+        "summary": "Kaynaklı bakım önerisi getir",
+        "responses": {
+          "200": {
+            "description": "Model önerisi veya doğrudan kaynak görünümü; mode alanı ayrımı belirtir. Geçmiş çözümler yalnızca yönetici tarafından kapatılmış işlerdir.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Suggestion"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Arıza bulunamadı"
+          },
+          "503": {
+            "description": "AI servisi kullanılamıyor"
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/technicians": {
+      "get": {
+        "summary": "Teknisyen başına atanan, işlemde, beklemede ve devir talebi sayıları (admin/operator)",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "İş yüküne göre sıralı teknisyenler"
+          },
+          "403": {
+            "description": "Yönetim rolü gerekli"
+          }
+        }
+      }
+    },
+    "/api/faults/{id}/similar": {
+      "get": {
+        "summary": "Mevcut işe erişebilen kullanıcı için aynı hata kodunda onaylanmış kapalı çözümler; Ollama gerekmez",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          },
+          "404": {
+            "description": "Bulunamadı veya erişim yok"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/documents/{id}": {
+      "get": {
+        "summary": "Kaydedilmiş teknik metni oku; Ollama gerekmez",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Başarılı"
+          },
+          "404": {
+            "description": "Bulunamadı veya erişim yok"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/documents/{id}/index": {
+      "post": {
+        "summary": "Belgeyi yeniden indeksle (admin/operator); hatada metin ve eski indeks korunur",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "İndekslendi"
+          },
+          "404": {
+            "description": "Belge bulunamadı"
+          },
+          "503": {
+            "description": "İndeks oluşturulamadı; belge korunur"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    },
+    "/api/fault-reports": {
+      "post": {
+        "summary": "Manuel arıza bildir; aynı açık cihaz/hata kaydına ekle veya yeni arıza/iş emri oluştur",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bildirim kalıcı kaydedildi; created_fault yeni arıza mı mevcut kayıt mı olduğunu belirtir. Otomatik atama yapılmaz.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportReceipt"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Aynı kullanıcı/anahtar/içerik daha önce kaydedildi; tekrar sayısı ve audit artmaz",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Geçersiz JSON veya bilinmeyen alan (reporter_id/source/location gibi)"
+          },
+          "401": {
+            "description": "Oturum gerekli"
+          },
+          "409": {
+            "description": "Aynı anahtar farklı içerikle kullanılmış"
+          },
+          "422": {
+            "description": "Alan doğrulaması başarısız veya cihaz kayıtlı değil"
+          }
+        }
+      },
+      "get": {
+        "summary": "Son 500 manuel bildirim; yönetim tümünü, teknisyen yalnızca kendi bildirimlerini görür",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bildirimler ve bağlı iş emri durumu"
+          }
+        }
+      }
+    },
+    "/api/faults/{id}/events": {
+      "get": {
+        "summary": "Arızanın son 100 gözlemi: kaynak, bildiren, zaman, konum detayı ve saha notu; iş emrine erişim gerektirir",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Gözlemler"
+          },
+          "404": {
+            "description": "Arıza bulunamadı veya erişim yok"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "JWT": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "Ingest": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Cihaz/simülatör INGEST_TOKEN anahtarı"
+      }
+    },
+    "schemas": {
+      "Login": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "device_id": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "fault_code": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "device",
+              "simulator"
+            ],
+            "description": "İsteğe bağlı otomatik kanal; yoksa device. manual kabul edilmez."
+          }
+        },
+        "required": [
+          "event_id",
+          "device_id",
+          "fault_code",
+          "severity",
+          "location",
+          "description",
+          "timestamp"
+        ],
+        "additionalProperties": false
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "location"
+        ],
+        "additionalProperties": false
+      },
+      "Transition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "assigned",
+              "in_progress",
+              "on_hold",
+              "resolved",
+              "closed"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "reassign",
+              "request_reassignment",
+              "return"
+            ]
+          },
+          "assignee_id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "status"
+            ],
+            "not": {
+              "required": [
+                "action"
+              ]
+            }
+          },
+          {
+            "required": [
+              "action"
+            ],
+            "not": {
+              "required": [
+                "status"
+              ]
+            }
+          }
+        ],
+        "description": "Yönetici/operatör: open→assigned, resolved→closed, gerekçeli reassign ve return. Sorumlu teknisyen: assigned→in_progress, in_progress→on_hold (gerekçe), on_hold→in_progress, in_progress→resolved (çözüm notu), gerekçeli request_reassignment. reassign yalnızca assigned/in_progress/on_hold durumlarında, farklı teknisyene yapılır; işi assigned durumuna getirir. return resolved durumundan assigned durumuna döndürür; aynı cihaz/kod için yeni açık arıza varsa 409. İlk atama/reassign için assignee_id zorunlu, diğer işlemlerde yasak. status ve action birlikte gönderilemez."
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 72
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "operator",
+              "technician"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "content": {
+            "type": "string",
+            "minLength": 30,
+            "maxLength": 100000
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "Suggestion": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string"
+          },
+          "notice": {
+            "type": "string"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "sources_only",
+              "no_sources"
+            ]
+          }
+        }
+      },
+      "ManualReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "request_id",
+          "device_id",
+          "fault_code",
+          "severity",
+          "description"
+        ],
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{8,64}$",
+            "description": "İstemci bildirim anahtarı; tekrar denemelerde aynı içerik için aynı değer kullanılır. Kullanıcı kapsamında ayrılır."
+          },
+          "device_id": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "fault_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+            "description": "Boşluklar kırpılır ve büyük harfe çevrilir."
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000,
+            "description": "En az 10 Unicode karakter, en fazla 2000 UTF-8 bayt."
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Yoksa sunucu zamanı; en fazla 5 dakika gelecekte olabilir."
+          },
+          "location_detail": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "field_note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "description": "Tüm oturum açmış roller bildirim yapabilir. Konum kayıtlı cihazdan, bildiren kişi JWT oturumundan alınır; bu alanlar istemciden kabul edilmez."
+      },
+      "ReportReceipt": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          },
+          "fault_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "work_order_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "created_fault": {
+            "type": "boolean"
+          },
+          "duplicate": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

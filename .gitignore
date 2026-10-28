@@ -1,0 +1,11 @@
+.env
+bin/
+node_modules/
+web/dist/
+*.log
+.DS_Store
+.coverage
+*.tsbuildinfo
+__pycache__/
+
+.local/
