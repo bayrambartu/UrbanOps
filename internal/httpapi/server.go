@@ -198,7 +198,7 @@ func (s *Server) createDevice(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) faults(w http.ResponseWriter, r *http.Request) {
 	status := r.URL.Query().Get("status")
-	s.list(w, r, `SELECT f.*,d.name AS device_name,d.location,w.id AS work_order_id FROM faults f JOIN devices d ON d.id=f.device_id JOIN work_orders w ON w.fault_id=f.id WHERE ($1='' OR f.status=$1) AND ($2::bigint=0 OR w.assignee_id=$2) ORDER BY f.last_seen DESC LIMIT 500`, status, technicianScope(r))
+	s.list(w, r, `SELECT f.*,d.name AS device_name,d.location,w.id AS work_order_id,w.status AS work_order_status,w.assignee_id,u.name AS assignee FROM faults f JOIN devices d ON d.id=f.device_id JOIN work_orders w ON w.fault_id=f.id LEFT JOIN users u ON u.id=w.assignee_id WHERE ($1='' OR f.status=$1) AND ($2::bigint=0 OR w.assignee_id=$2) ORDER BY f.last_seen DESC LIMIT 500`, status, technicianScope(r))
 }
 func (s *Server) orders(w http.ResponseWriter, r *http.Request) {
 	s.list(w, r, `SELECT w.*,f.device_id,f.fault_code,f.severity,f.resolution,f.description,f.occurrences,d.location,u.name AS assignee FROM work_orders w JOIN faults f ON f.id=w.fault_id JOIN devices d ON d.id=f.device_id LEFT JOIN users u ON u.id=w.assignee_id WHERE ($1::bigint=0 OR w.assignee_id=$1) ORDER BY CASE f.severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,w.created_at,w.id LIMIT 500`, technicianScope(r))
@@ -285,9 +285,13 @@ func (s *Server) indexDocument(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
 	defer cancel()
-	id, err := assistant.SaveDocument(r.Context(), s.DB, in.Title, in.Content)
+	id, existingTitle, created, err := assistant.SaveDocumentInfo(r.Context(), s.DB, in.Title, in.Content)
 	if err != nil {
 		s.failure(w, err)
+		return
+	}
+	if !created {
+		jsonResponse(w, 200, map[string]any{"id": id, "status": "duplicate", "message": "Bu metin “" + existingTitle + "” başlığıyla zaten kayıtlı; yeni kayıt oluşturulmadı. İndeks gerekiyorsa mevcut belgedeki indeksleme düğmesini kullanın."})
 		return
 	}
 	err = s.AI.IndexExisting(ctx, s.DB, id)

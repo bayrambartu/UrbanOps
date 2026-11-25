@@ -87,24 +87,31 @@ func Split(text string) []string {
 
 // SaveDocument persists text independently of the optional model service.
 func SaveDocument(ctx context.Context, db *pgxpool.Pool, title, content string) (int64, error) {
+	id, _, _, err := SaveDocumentInfo(ctx, db, title, content)
+	return id, err
+}
+
+// SaveDocumentInfo deduplicates by content: the same text under another title is not stored twice.
+// created is false when the text already exists; existingTitle is then the stored document's title.
+func SaveDocumentInfo(ctx context.Context, db *pgxpool.Pool, title, content string) (id int64, existingTitle string, created bool, err error) {
 	tx, err := db.Begin(ctx)
 	if err != nil {
-		return 0, err
+		return 0, "", false, err
 	}
 	defer tx.Rollback(ctx)
-	key := fmt.Sprintf("%x", sha256.Sum256([]byte(title+"\x00"+content)))
+	key := fmt.Sprintf("%x", sha256.Sum256([]byte(content)))
 	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,2))`, key); err != nil {
-		return 0, err
+		return 0, "", false, err
 	}
-	var id int64
-	err = tx.QueryRow(ctx, `SELECT id FROM documents WHERE title=$1 AND content=$2 ORDER BY id LIMIT 1`, title, content).Scan(&id)
+	err = tx.QueryRow(ctx, `SELECT id,title FROM documents WHERE content=$1 ORDER BY id LIMIT 1`, content).Scan(&id, &existingTitle)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = tx.QueryRow(ctx, `INSERT INTO documents(title,content) VALUES($1,$2) RETURNING id`, title, content).Scan(&id)
+		created, existingTitle = true, title
 	}
 	if err != nil {
-		return 0, err
+		return 0, "", false, err
 	}
-	return id, tx.Commit(ctx)
+	return id, existingTitle, created, tx.Commit(ctx)
 }
 func (c *Client) IndexExisting(ctx context.Context, db *pgxpool.Pool, id int64) error {
 	var content string

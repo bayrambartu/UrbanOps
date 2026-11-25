@@ -266,11 +266,21 @@ func TestDurableIngestionAndWorkOrderLifecycle(t *testing.T) {
 	}
 	again := request("/api/documents", "POST", session.Token, docBody)
 	var duplicate struct {
-		ID int64 `json:"id"`
+		ID     int64  `json:"id"`
+		Status string `json:"status"`
 	}
 	json.Unmarshal(again.Body.Bytes(), &duplicate)
-	if again.Code != 202 || duplicate.ID != doc.ID {
-		t.Fatal("duplicate document created")
+	if again.Code != 200 || duplicate.ID != doc.ID || duplicate.Status != "duplicate" {
+		t.Fatal("duplicate document created", again.Body.String())
+	}
+	renamed := request("/api/documents", "POST", session.Token, fmt.Sprintf(`{"title":%q,"content":"TEST_TIMEOUT: model kapalıyken de okunabilen teknik eğitim kaynağı."}`, "farkli-baslik-"+nonce))
+	var sameText struct {
+		ID     int64  `json:"id"`
+		Status string `json:"status"`
+	}
+	json.Unmarshal(renamed.Body.Bytes(), &sameText)
+	if renamed.Code != 200 || sameText.ID != doc.ID || sameText.Status != "duplicate" {
+		t.Fatal("same text under another title created a second document", renamed.Body.String())
 	}
 	if w := request(fmt.Sprintf("/api/documents/%d", doc.ID), "GET", otherToken, ""); w.Code != 200 || !strings.Contains(w.Body.String(), "TEST_TIMEOUT") {
 		t.Fatal("saved document unreadable")
