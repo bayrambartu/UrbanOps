@@ -10,17 +10,17 @@ Bu kayıt, gerçek cihaz müdahalesi içermeyen bir demo senaryosudur. Amaç, il
 ## Adımlar
 
 1. İlk manuel bildirim açıldı. Bakım asistanı `no_sources` döndürdü; geçmiş çözüm yoktu.
-2. Yönetici İE-10'u Ayhan Kurnaz'a atadı. Ayhan kendi hesabıyla işi başlattı ve demo çözümünü kaydetti.
+2. Yönetici İE-10'u kıdemli teknisyene atadı. Teknisyen kendi hesabıyla işi başlattı ve demo çözümünü kaydetti.
 3. Çözümdeki kök neden, telemetri yayın aralığının 60 saniye olmasına rağmen izleme panelinin 10 saniyede veri beklemesi olarak tanımlandı. DEMO-TLM-03 profilinde yayın aralığı 10 saniye, uyarı eşiği 30 saniye olarak eşleştirilmiş varsayıldı. Altı ardışık mesajla doğrulama bir eğitim varsayımıdır; fiziksel ölçüm yapılmadı.
 4. Çözülmüş fakat yönetici tarafından kapatılmamışken asistan yeniden `no_sources` döndürdü. Böylece onaysız çözümün ortak bilgiye dönüşmediği kontrol edildi.
 5. Yönetici demo çözümünü onaylayıp İE-10'u kapattı.
 6. Aynı cihaz ve hata koduyla yeni bir bildirim açıldı. Yeni arıza/iş kimliği 11 oldu; kapanmış kayıt tekrar açılmadı.
-7. İE-11, `bartu@gmail.com` hesabındaki teknisyen Bartu Kurnaz'a atandı. Parolası değiştirilmedi; bu iş bizim tarafımızdan başlatılmadı veya çözülmedi.
-8. `/api/faults/11/similar`, ilk sırada Ayhan'ın yönetici onaylı #10 çözümünü getirdi. `/suggestions` için kaynak kimliği `fault-10` oldu.
+7. İE-11, yeni teknisyen hesabına atandı. Parolası değiştirilmedi; bu iş bizim tarafımızdan başlatılmadı veya çözülmedi.
+8. `/api/faults/11/similar`, ilk sırada kıdemli teknisyenin yönetici onaylı #10 çözümünü getirdi. `/suggestions` için kaynak kimliği `fault-10` oldu.
 
 ## Son kullanıcı kontrolü
 
-Bartu hesabıyla **İşlerim → İE-11 → İşi aç → Bakım asistanı → Kaynaklı öneri getir**.
+Yeni teknisyen hesabıyla **İşlerim → İE-11 → İşi aç → Bakım asistanı → Kaynaklı öneri getir**.
 
 Beklenen yanıt, geçmiş kök nedeni ve DEMO-TLM-03 / 10 saniye / 30 saniye bilgilerini kaynakla birlikte içermelidir. Kaynak detayındaki `fault-10` ve **Onaylı geçmiş çözümler** bölümündeki İE-10 aynı geçmiş kaydı göstermelidir. Aynı kök neden yeni olay için yeniden doğrulanmalıdır.
 
@@ -44,4 +44,4 @@ Son çıktıdan çözüm bölümü:
 
 > Çözüm: DEMO-TLM-03 profilinde yayın aralığı 10 saniye ve izleme uyarı eşiği 30 saniye.
 
-Bu kontrol yönetici oturumundan aynı bakım asistanı API'si çağrılarak yapıldı. Bartu hesabındaki son arayüz tıklamasını kullanıcı yapmayı seçti; Bartu'nun parolası alınmadı veya değiştirilmedi. İE-11 teknisyenin denemesi için atanmış bırakıldı.
+Bu kontrol yönetici oturumundan aynı bakım asistanı API'si çağrılarak yapıldı. Yeni teknisyen hesabındaki son arayüz tıklamasını kullanıcı yapmayı seçti; hesabın parolası alınmadı veya değiştirilmedi. İE-11 teknisyenin denemesi için atanmış bırakı

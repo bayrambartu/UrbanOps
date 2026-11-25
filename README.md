@@ -151,7 +151,7 @@ Güncelleme: `docker compose up --build -d api worker` ardından tarayıcıyı y
 
 ## Çözümün tekrar arızasında kullanılması
 
-Canlı demo adımları: [docs/scenarios/telemetry-repeat.md](docs/scenarios/telemetry-repeat.md). İE-10 Ayhan tarafından çözülüp yönetici tarafından kapatıldı; aynı hata kodundaki İE-11 Bartu Kurnaz'a atandı. Geçmiş çözüm kaynağı `fault-10` olarak izlenebilir.
+Canlı demo adımları: [docs/scenarios/telemetry-repeat.md](docs/scenarios/telemetry-repeat.md). İE-10 kıdemli teknisyen tarafından çözülüp yönetici tarafından kapatıldı; aynı hata kodundaki İE-11 yeni teknisyene atandı. Geçmiş çözüm kaynağı `fault-10` olarak izlenebilir.
 
 Bu çalışma alanında hazır yerel modeller için ayar:
 
@@ -165,4 +165,4 @@ Bu URL Docker içindeki API içindir. Backend'i doğrudan host üzerinde çalı�
 
 Üretilen yanıt için JSON şeması, `answer` ve `citations` alanlarını ve getirilen kaynak kimliklerini sınırlar. Talimatlar geçmiş çözümdeki profil, süre, ayar ve doğrulama ayrıntılarının korunmasını ve demo etiketinin aktarılmasını ister. Modelin teknik doğruluğu yalnızca geçerli kaynak kimliği üretmesiyle kanıtlanmaz; demo çıktısı gerçek kaynak değerleriyle ayrıca karşılaştırılır.
 
-Onaylı geçmiş çözüm araması için embedding zorunlu değildir. Seçili embedding modeline ait vektörlü belge parçası yoksa asistan embedding çağrısını atlayıp bulunan geçmiş çözümü doğrudan yanıt modeline verir. Vektör araması başarısız olsa da bulunan ilişkisel kaynaklarla yanıt üretimi denenir.
+Onaylı geçmiş çözüm araması için embedding zorunlu değildir. Seçili embedding modeline ait vektörlü belge parçası yoksa asistan embedding çağrısını atlayıp bulunan geçmiş çözümü doğrudan yanıt modeline verir. Vektör araması başarısız olsa da bulunan ilişkisel kaynaklarla yanıt üre
