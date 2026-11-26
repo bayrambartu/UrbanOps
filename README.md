@@ -135,6 +135,18 @@ python3 scripts/seed_training.py
 
 `IMPORT_TRAINING_DOCS=true` ile API başlangıcında üç araştırılmış teknik kaynak özeti model gerekmeksizin yüklenir. Bu seçenek varsayılan olarak kapalıdır; bu çalışma alanında açıldı. Kaynak metinleri binary'ye gömülüdür ve aynı içerik yeniden başlatmada çoğaltılmaz.
 
+## Demo veri seti (sunum ve ekran görüntüsü için)
+
+Tamamen kurgusal bir veri seti, ekranların hepsinin anlamlı görünmesi için kurulur: 1 operatör, 3 teknisyen, 7 trafik altyapısı cihazı (sinyal kontrolörü, araç dedektörü, değişken mesaj panosu, kamera, ağ anahtarı, UPS), 7 iş emri ve 2 teknik kontrol listesi. Hiçbir değer gerçek altyapıdan ölçülmemiştir.
+
+```sh
+python3 scripts/seed_demo.py            # --skip-documents ile belgeler atlanır
+```
+
+Her iş emri farklı bir durumda bırakılır: onaylı kapalı bir döngü dedektörü onarımı, aynı hata kodundaki yeni arıza (asistan önceki çözümü kaynak gösterir), üç kez bildirilen kritik arıza (tek kayıt, tekrar sayısı 3), beklemede, yönetici onayı bekleyen ve devir talebi olan işler, atanmamış bir arıza ve geçmişi olmayan bir hata kodu (asistanın uydurma yapmadığını göstermek için). Betik tekrar çalıştırılabilir; mevcut kayıtların üzerine yazmaz. Hesap parolaları rastgele üretilir ve `.local/demo-accounts.json` içinde (git dışı) tutulur. API dakikada 10 girişe izin verdiği için çalıştırmalar arasında bir dakika bekleyin.
+
+Temiz bir ekran görüntüsü ortamı için boş bir yığınla başlayın (**tüm verileri siler**): `docker compose down -v && docker compose up --build -d api worker`.
+
 ## Manuel arıza bildirimi
 
 Tüm roller panelde **Arıza bildir** ekranını kullanabilir. Zorunlu alanlar: kayıtlı cihaz, hata türü/kodu, önem derecesi ve en az 10 karakterlik açıklama. Konum cihazdan otomatik alınır. Gözlem zamanı, kavşak/pano/yön gibi konum detayı ve saha notu/ilk kontroller isteğe bağlıdır. Gözlem zamanı boşsa sunucu zamanı kullanılır; gelecekteki hatalı zamanlar reddedilir. Bildiren kişi ve kayıt zamanı oturumdan/sunucudan alınır; kullanıcı başka personel adına bildirim yapamaz.
