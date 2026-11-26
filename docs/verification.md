@@ -69,4 +69,4 @@ Son canlı kontrol: HTTP 200, **mode=generated**, **citations=[fault-10]**. Yan�
 
 Kontrol yönetici hesabından yapıldı. Yeni teknisyen hesabındaki son UI adımı kullanıcıya bırakıldı; parolası değiştirilmedi. Ayrıntılar: docs/scenarios/telemetry-repeat.md.
 
-Kod kontrolü: `go test -race -count=1 ./...` ve `go vet ./...` başarılı. 14 birim test fonksiyonu ve alt senaryoları geçti; iki gerçek servis entegrasyon testi bağlantı değişkenleri olmadığından SKIP. Entegrasyon testine, vektör yokken yalnızca generation çağrısı yapılması için regresyon kontrolü de eklendi; bu regresyonun canlı karşılığı yukarıdaki gerçek API denemesinde
+Kod kontrolü: `go test -race -count=1 ./...` ve `go vet ./...` başarılı. 14 birim test fonksiyonu ve alt senaryoları geçti; iki gerçek servis entegrasyon testi bağlantı değişkenleri olmadığından SKIP. Entegrasyon testine, vektör yokken yalnızca generation çağrısı yapılması için regresyon kontrolü de eklendi; bu regresyonun canlı karşılığı yukarıdaki gerçek API denemesinde gözlendi.

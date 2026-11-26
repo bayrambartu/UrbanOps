@@ -44,4 +44,4 @@ Son çıktıdan çözüm bölümü:
 
 > Çözüm: DEMO-TLM-03 profilinde yayın aralığı 10 saniye ve izleme uyarı eşiği 30 saniye.
 
-Bu kontrol yönetici oturumundan aynı bakım asistanı API'si çağrılarak yapıldı. Yeni teknisyen hesabındaki son arayüz tıklamasını kullanıcı yapmayı seçti; hesabın parolası alınmadı veya değiştirilmedi. İE-11 teknisyenin denemesi için atanmış bırakı
+Bu kontrol yönetici oturumundan aynı bakım asistanı API'si çağrılarak yapıldı. Yeni teknisyen hesabındaki son arayüz tıklamasını kullanıcı yapmayı seçti; hesabın parolası alınmadı veya değiştirilmedi. İE-11 teknisyenin denemesi için atanmış bırakıldı.

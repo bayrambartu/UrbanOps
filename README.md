@@ -1,5 +1,7 @@
 # UrbanOps AI
 
+[![CI](https://github.com/bayrambartu/UrbanOps/actions/workflows/ci.yml/badge.svg)](https://github.com/bayrambartu/UrbanOps/actions/workflows/ci.yml)
+
 Go, PostgreSQL, RabbitMQ ve yerel RAG ile arıza takip ve bakım yönetimi prototipi. İSBAK veya İBB ile resmî iş birliği/entegrasyon içermez; gerçek şehir altyapısına bağlı değildir.
 
 ## Hızlı başlangıç
@@ -165,4 +167,4 @@ Bu URL Docker içindeki API içindir. Backend'i doğrudan host üzerinde çalı�
 
 Üretilen yanıt için JSON şeması, `answer` ve `citations` alanlarını ve getirilen kaynak kimliklerini sınırlar. Talimatlar geçmiş çözümdeki profil, süre, ayar ve doğrulama ayrıntılarının korunmasını ve demo etiketinin aktarılmasını ister. Modelin teknik doğruluğu yalnızca geçerli kaynak kimliği üretmesiyle kanıtlanmaz; demo çıktısı gerçek kaynak değerleriyle ayrıca karşılaştırılır.
 
-Onaylı geçmiş çözüm araması için embedding zorunlu değildir. Seçili embedding modeline ait vektörlü belge parçası yoksa asistan embedding çağrısını atlayıp bulunan geçmiş çözümü doğrudan yanıt modeline verir. Vektör araması başarısız olsa da bulunan ilişkisel kaynaklarla yanıt üre
+Onaylı geçmiş çözüm araması için embedding zorunlu değildir. Seçili embedding modeline ait vektörlü belge parçası yoksa asistan embedding çağrısını atlayıp bulunan geçmiş çözümü doğrudan yanıt modeline verir. Vektör araması başarısız olsa da bulunan ilişkisel kaynaklarla yanıt üretimi denenir.
