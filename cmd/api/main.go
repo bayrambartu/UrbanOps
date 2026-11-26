@@ -63,7 +63,13 @@ func run() error {
 		return err
 	}
 	defer b.Close()
-	app := &httpapi.Server{DB: db, Broker: b, Secret: secret, IngestToken: ingest, AI: assistant.New(platform.Env("OLLAMA_URL", "http://localhost:11434"), platform.Env("OLLAMA_EMBED_MODEL", "nomic-embed-text"), platform.Env("OLLAMA_CHAT_MODEL", "qwen2.5:7b"))}
+	ai := assistant.New(platform.Env("OLLAMA_URL", "http://localhost:11434"), platform.Env("OLLAMA_EMBED_MODEL", "nomic-embed-text"), platform.Env("OLLAMA_CHAT_MODEL", "qwen2.5:7b"))
+	threshold, err := assistant.ParseMinSimilarity(os.Getenv("RAG_MIN_SIMILARITY"))
+	if err != nil {
+		slog.Warn("geçersiz benzerlik eşiği; varsayılan kullanılıyor", "error", err, "default", threshold)
+	}
+	ai.MinSimilarity = threshold
+	app := &httpapi.Server{DB: db, Broker: b, Secret: secret, IngestToken: ingest, AI: ai}
 	srv := &http.Server{Addr: platform.Env("ADDR", ":8080"), Handler: app.Routes(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 150 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	result := make(chan error, 1)
 	go func() { slog.Info("UrbanOps API hazır", "addr", srv.Addr); result <- srv.ListenAndServe() }()

@@ -13,17 +13,38 @@ import (
 	"log/slog"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
 
+// DefaultMinSimilarity is the lowest cosine similarity at which a document chunk
+// is offered as a source. It was chosen by measurement (scripts/eval_retrieval.py):
+// relevant chunks scored 0.57-0.81, unrelated ones 0.37-0.58, so 0.45 let unrelated
+// documents through for most queries. Tune it with real data via RAG_MIN_SIMILARITY.
+const DefaultMinSimilarity = 0.60
+
 type Client struct {
 	URL, EmbedModel, ChatModel string
 	HTTP                       *http.Client
+	MinSimilarity              float64
 }
 
 func New(url, embed, chat string) *Client {
-	return &Client{strings.TrimRight(url, "/"), embed, chat, &http.Client{Timeout: 110 * time.Second}}
+	return &Client{strings.TrimRight(url, "/"), embed, chat, &http.Client{Timeout: 110 * time.Second}, DefaultMinSimilarity}
+}
+
+// ParseMinSimilarity reads RAG_MIN_SIMILARITY. An empty value selects the default;
+// anything outside (0,1) is rejected rather than silently disabling the filter.
+func ParseMinSimilarity(raw string) (float64, error) {
+	if strings.TrimSpace(raw) == "" {
+		return DefaultMinSimilarity, nil
+	}
+	v, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
+	if err != nil || math.IsNaN(v) || v <= 0 || v >= 1 {
+		return DefaultMinSimilarity, fmt.Errorf("RAG_MIN_SIMILARITY 0 ile 1 arasında bir sayı olmalı: %q", raw)
+	}
+	return v, nil
 }
 func (c *Client) call(ctx context.Context, path string, in, out any) error {
 	body, err := json.Marshal(in)
@@ -186,8 +207,8 @@ func (c *Client) Suggest(ctx context.Context, db *pgxpool.Pool, id int64) (Sugge
 		v, embedErr := c.embed(ctx, "search_query: "+code+" "+description)
 		if embedErr == nil {
 			rows, err := db.Query(ctx, `SELECT c.id,d.title,c.content FROM chunks c JOIN documents d ON d.id=c.document_id
-  WHERE c.model=$1 AND vector_dims(c.embedding)=$3 AND 1-(c.embedding <=> $2::vector)>=0.45
-  ORDER BY c.embedding <=> $2::vector LIMIT 5`, c.EmbedModel, vector(v), len(v))
+  WHERE c.model=$1 AND vector_dims(c.embedding)=$3 AND 1-(c.embedding <=> $2::vector)>=$4
+  ORDER BY c.embedding <=> $2::vector LIMIT 5`, c.EmbedModel, vector(v), len(v), c.MinSimilarity)
 			if err != nil {
 				return out, err
 			}

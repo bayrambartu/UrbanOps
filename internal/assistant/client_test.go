@@ -85,3 +85,24 @@ func TestGenerationUsesKnownReferenceSchema(t *testing.T) {
 		}
 	}
 }
+
+func TestParseMinSimilarity(t *testing.T) {
+	for _, tc := range []struct {
+		raw     string
+		want    float64
+		wantErr bool
+	}{
+		{"", DefaultMinSimilarity, false},
+		{" 0.55 ", 0.55, false},
+		{"0", DefaultMinSimilarity, true},
+		{"1", DefaultMinSimilarity, true},
+		{"-0.2", DefaultMinSimilarity, true},
+		{"abc", DefaultMinSimilarity, true},
+		{"NaN", DefaultMinSimilarity, true},
+	} {
+		got, err := ParseMinSimilarity(tc.raw)
+		if (err != nil) != tc.wantErr || got != tc.want {
+			t.Fatalf("ParseMinSimilarity(%q) = %v, %v; want %v, error=%v", tc.raw, got, err, tc.want, tc.wantErr)
+		}
+	}
+}
