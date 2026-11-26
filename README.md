@@ -4,6 +4,34 @@
 
 Go, PostgreSQL, RabbitMQ ve yerel RAG ile arıza takip ve bakım yönetimi prototipi. İSBAK veya İBB ile resmî iş birliği/entegrasyon içermez; gerçek şehir altyapısına bağlı değildir.
 
+## Ekran görüntüleri
+
+Aşağıdaki görüntüler tamamen kurgusal demo verisiyle ([`scripts/seed_demo.py`](scripts/seed_demo.py)) alındı; gerçek altyapıdan alınmış hiçbir değer yoktur.
+
+![Giriş ekranı](docs/screenshots/01-giris.png)
+
+**Genel bakış ve arıza listesi.** Önem, arıza durumu, iş emri durumu ve sorumlu tek tabloda; atanmamış işler sarı rozetle öne çıkar, aynı cihaz ve hata koduna gelen tekrarlar tek kayıtta sayılır.
+
+![Genel bakış](docs/screenshots/02-genel-bakis.png)
+![Arıza kayıtları](docs/screenshots/03-ariza-kayitlari.png)
+
+**Bakım iş akışı.** Atama, teknisyen müdahalesi, çözüm kontrolü ve kapatma; bekleme gerekçesi ve devir talebi satırın içinde görünür.
+
+![İş emirleri](docs/screenshots/04-is-emirleri.png)
+
+**Teknisyen görünümü.** Teknisyen yalnızca kendisine atanmış işleri görür; yetki ayrımı arayüzde değil, backend'de uygulanır.
+
+![Teknisyenin işleri](docs/screenshots/05-islerim-teknisyen.png)
+![Arıza detayı](docs/screenshots/06-ariza-detayi.png)
+
+**Kaynaklı bakım önerisi.** Aynı hata kodunda daha önce çözülüp yönetici tarafından onaylanmış iş, yeni arızada kaynak olarak gösterilir. Öneri kısa, başlıklı ve atıflıdır.
+
+![Kaynaklı öneri](docs/screenshots/07-kaynakli-oneri.png)
+
+**Kaynak yoksa uydurma yok.** Hata kodunda onaylı geçmiş çözüm ya da ilgili belge bulunmadığında asistan öneri üretmez ve bunu açıkça söyler.
+
+![Kaynak bulunamadı](docs/screenshots/08-kaynak-yok.png)
+
 ## Hızlı başlangıç
 
 Gereksinimler: Docker Engine/Desktop + Compose, Python 3. Yerel kaynak geliştirmesi için Go 1.22+ ve Node.js 22+.
@@ -171,12 +199,12 @@ Bu çalışma alanında hazır yerel modeller için ayar:
 
 ```dotenv
 OLLAMA_URL=http://host.docker.internal:11434
-OLLAMA_CHAT_MODEL=qwen3:4b
+OLLAMA_CHAT_MODEL=qwen3:4b-instruct
 OLLAMA_EMBED_MODEL=bge-m3:latest
 ```
 
 Bu URL Docker içindeki API içindir. Backend'i doğrudan host üzerinde çalıştırırken `OLLAMA_URL=http://localhost:11434` kullanılır. Compose artık `OLLAMA_URL` değişkenini okur; ayar yoksa varsayılan `http://ollama:11434` servis adresidir.
 
-Üretilen yanıt için JSON şeması, `answer` ve `citations` alanlarını ve getirilen kaynak kimliklerini sınırlar. Talimatlar geçmiş çözümdeki profil, süre, ayar ve doğrulama ayrıntılarının korunmasını ve demo etiketinin aktarılmasını ister. Modelin teknik doğruluğu yalnızca geçerli kaynak kimliği üretmesiyle kanıtlanmaz; demo çıktısı gerçek kaynak değerleriyle ayrıca karşılaştırılır.
+Üretilen yanıt için JSON şeması, `answer` ve `citations` alanlarını ve getirilen kaynak kimliklerini sınırlar. Yanıt dört kısa başlıkta (kök neden, uygulanan çözüm, doğrulama, ilk adım) istenir; kaynaktaki adların, sürelerin ve sayısal değerlerin aynen aktarılması sistem komutunda belirtilir, demo etiketi yalnızca kaynakta varsa aktarılır. Küçük `qwen3:4b` bazen kelimeleri bozdu ("dedekt:"); `qwen3:4b-instruct` aynı komutla temiz çıktı verdi, bu yüzden örnekte o kullanılır. Modelin teknik doğruluğu yalnızca geçerli kaynak kimliği üretmesiyle kanıtlanmaz; demo çıktısı gerçek kaynak değerleriyle ayrıca karşılaştırılır.
 
 Onaylı geçmiş çözüm araması için embedding zorunlu değildir. Seçili embedding modeline ait vektörlü belge parçası yoksa asistan embedding çağrısını atlayıp bulunan geçmiş çözümü doğrudan yanıt modeline verir. Vektör araması başarısız olsa da bulunan ilişkisel kaynaklarla yanıt üretimi denenir.
